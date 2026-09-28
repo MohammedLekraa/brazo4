@@ -85,6 +85,62 @@ document.addEventListener('DOMContentLoaded', () => {
     $$('#bom tbody tr').forEach(r => r.hidden = !r.innerText.toLowerCase().includes(q));
   });
 
+  /* Mode resum / tècnic i PDF */
+  const mode = $('#mode');
+  mode.addEventListener('click', () => {
+    const s = document.body.classList.toggle('summary');
+    mode.textContent = s ? 'Mode tècnic' : 'Mode resum';
+    links.forEach(l => { const t = $(l.getAttribute('href')); l.hidden = !!t && getComputedStyle(t).display === 'none'; });
+  });
+  $('#print').addEventListener('click', () => print());
+
+  /* Trama que recorre el diagrama */
+  const frame = ['Exemple de lectura ADC: 2010 1962 2231 2083 1990', 'Angle del canell (roll) amb filtre complementari', 'Trama de text: "2010 1962 2231 2083 1990 45"', 'En vol per Bluetooth SPP, una cada 100 ms', 'map() converteix cada lectura en angle', 'PWM als sis servos'];
+  $('#send').addEventListener('click', () => nodes.forEach((_, n) => setTimeout(() => {
+    showNode(n);
+    const p = document.createElement('p'); p.className = 'mono'; p.textContent = frame[n]; info.append(p);
+  }, n * 1100)));
+
+  /* Demo del salt de ±180° */
+  const dial = $('#dial');
+  const clamp = v => Math.min(180, Math.max(0, v));
+  function drawDial() {
+    const g = +dial.value, a = ((g + 180) % 360) - 180, d = a - g;
+    const au = d > 180 ? a - 360 : d < -180 ? a + 360 : a;
+    const no = clamp(0.5 * g + 0.5 * a), ok = clamp(0.5 * g + 0.5 * au);
+    $('#b-no').style.width = no / 1.8 + '%'; $('#v-no').textContent = Math.round(no);
+    $('#b-ok').style.width = ok / 1.8 + '%'; $('#v-ok').textContent = Math.round(ok);
+  }
+  dial.addEventListener('input', drawDial); drawDial();
+
+  /* Demo d'alimentació */
+  const sep = $('#sep'); let rst = 0;
+  setInterval(() => {
+    const v = sep.checked ? 5 : 5 - Math.random() * 2.4;
+    rst = !sep.checked && v < 3.3 ? 6 : Math.max(0, rst - 1);
+    $('#b-v').style.width = v / 5 * 100 + '%';
+    $('#v-st').textContent = rst ? 'Wemos reiniciada' : 'Wemos estable: ' + v.toFixed(1) + ' V';
+  }, 250);
+
+  /* Mà fantasma */
+  const hand = $('#hand'), rows = ['Polze', 'Índex', 'Cor', 'Anular', 'Menyic'].map(n => {
+    const r = document.createElement('div');
+    r.innerHTML = `<span class="mono">${n}</span><input type="range" min="0" max="100" value="0" aria-label="${n}"><div class="bar"><i></i></div>`;
+    hand.append(r);
+    return { inp: $('input', r), bar: $('i', r), ang: 0 };
+  });
+  setInterval(() => rows.forEach(f => { f.ang += (f.inp.value - f.ang) / 4; f.bar.style.width = f.ang + '%'; }), 100);
+
+  /* Comparadors abans / després */
+  $$('.cmp').forEach(c => {
+    const top = $('.cmp-top', c);
+    top.style.clipPath = 'inset(0 50% 0 0)';
+    $('input', c).addEventListener('input', e => {
+      c.style.setProperty('--p', e.target.value + '%');
+      top.style.clipPath = `inset(0 ${100 - e.target.value}% 0 0)`;
+    });
+  });
+
   /* Visor amb zoom i arrossegament */
   const lb = $('#lightbox'), lbi = $('#lb-img');
   let s = 1, x = 0, y = 0, drag = false, sx = 0, sy = 0;

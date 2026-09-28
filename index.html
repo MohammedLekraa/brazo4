@@ -13,7 +13,7 @@
 <div id="progress"></div>
 <header class="nav">
   <a href="index.html" class="logo">ML Portfolio</a>
-  <a href="index.html" class="btn">&larr; Tornar als projectes</a>
+  <div class="nav-r"><button class="btn" id="mode">Mode resum</button><button class="btn" id="print">Desa en PDF</button><a href="index.html" class="btn">&larr; Tornar als projectes</a></div>
 </header>
 
 <div class="layout">
@@ -24,6 +24,8 @@
       <a href="#cad">Disseny CAD</a>
       <a href="#sistema">Arquitectura</a>
       <a href="#pcb">Disseny PCB</a>
+      <a href="#demos">Demos</a>
+      <a href="#proces">Procés</a>
       <a href="#codi">Firmware</a>
       <a href="#bom">Materials</a>
       <a href="#reptes">Reptes i solucions</a>
@@ -51,6 +53,16 @@
           <img src="Brazo1.jpg" alt="Prototip final del braç articulat" class="zoom">
           <figcaption class="mono">Prototip final. Clica per ampliar.</figcaption>
         </figure>
+      </div>
+    </section>
+
+    <section id="resum" class="sum">
+      <span class="mono">Resum en 1 minut</span>
+      <h2>Problema, solució i aprenentatge</h2>
+      <div class="grid3">
+        <div class="card"><h3>Problema</h3><p>Controlar un braç robòtic amb la mà, amb components de baix cost.</p></div>
+        <div class="card"><h3>Solució</h3><p>Un guant amb 5 sensors flex i una IMU, dues ESP32 per Bluetooth i un braç imprès en 3D amb 6 servos.</p></div>
+        <div class="card"><h3>Aprenentatge</h3><p>Els problemes reals apareixen en integrar: alimentació, materials, PCB i filtratge.</p></div>
       </div>
     </section>
 
@@ -84,7 +96,7 @@
       </div>
     </section>
 
-    <section id="sistema">
+    <section id="sistema" class="tech">
       <span class="mono">Sistema</span>
       <h2>Arquitectura</h2>
       <p class="lead">Selecciona un bloc per veure què fa.</p>
@@ -97,9 +109,10 @@
         <button class="node" data-n="5">Servos</button>
       </div>
       <div class="card" id="node-info" aria-live="polite"></div>
+      <p style="margin-top:1rem"><button class="btn" id="send">Envia una trama</button></p>
     </section>
 
-    <section id="pcb">
+    <section id="pcb" class="tech">
       <span class="mono">Electrònica</span>
       <h2>Disseny PCB</h2>
       <div class="grid2">
@@ -116,7 +129,49 @@
       </div>
     </section>
 
-    <section id="codi">
+    <section id="demos" class="tech">
+      <span class="mono">Demos</span>
+      <h2>Prova-ho tu</h2>
+      <div class="grid2">
+        <div class="card"><h3>El salt de ±180°</h3>
+          <p>Arrossega el gir real del canell. El filtre té un pes exagerat per veure l'efecte.</p>
+          <input type="range" id="dial" min="0" max="360" value="0" aria-label="Gir del canell">
+          <div class="bar"><i id="b-no"></i></div><p class="mono">Sense unwrapping: <b id="v-no"></b>°</p>
+          <div class="bar"><i id="b-ok"></i></div><p class="mono">Amb unwrapping: <b id="v-ok"></b>°</p></div>
+        <div class="card"><h3>Alimentació dels servos</h3>
+          <p>Il·lustració: amb una sola font, els servos fan caure la tensió de la Wemos.</p>
+          <label class="mono"><input type="checkbox" id="sep"> Alimentació separada</label>
+          <div class="bar"><i id="b-v"></i></div><p class="mono" id="v-st"></p></div>
+      </div>
+      <div class="card" style="margin-top:1.5rem"><h3>Mà fantasma</h3>
+        <p>Mou els dits del guant. La barra és el servo, que avança 1/4 de la diferència a cada trama.</p>
+        <div class="hand" id="hand"></div></div>
+    </section>
+
+    <section id="proces" class="tech">
+      <span class="mono">Procés</span>
+      <h2>Què va fallar</h2>
+      <ul class="log">
+        <li><b>PCB del guant v1.</b> Pistes massa fines i pla de massa sense imprimir. Es va refer amb pistes més amples.</li>
+        <li><b>Pla de massa a la cara superior.</b> La calor es dispersava i l'estany s'escampava: soldar era difícil.</li>
+        <li><b>TPU amb farciment alt.</b> Els dits eren massa rígids per tancar-se.</li>
+        <li><b>Filaflex i TPU 40D.</b> El primer era massa tou; el segon, car i encara rígid.</li>
+        <li><b>Adhesius.</b> Molts deixaven el sensor flex rígid un cop eixuts.</li>
+        <li><b>Servos i Wemos.</b> La Wemos es reiniciava: es van separar les alimentacions.</li>
+        <li><b>Giroscopi.</b> Deriva d'uns 3,5° amb el sensor quiet i salt en creuar ±180°.</li>
+      </ul>
+      <div class="grid2" style="margin-top:1.5rem">
+        <div class="card"><h3>PCB del guant: v1 i v2</h3>
+          <div class="cmp"><img src="pcb-v1.jpg" alt="PCB v1"><div class="cmp-top"><img src="pcb-v2.jpg" alt="PCB v2"></div><input type="range" min="0" max="100" value="50" aria-label="Compara v1 i v2"></div></div>
+        <div class="card"><h3>TPU: farciment alt i baix</h3>
+          <div class="cmp"><img src="tpu-alt.jpg" alt="TPU amb farciment alt"><div class="cmp-top"><img src="tpu-baix.jpg" alt="TPU amb farciment baix"></div><input type="range" min="0" max="100" value="50" aria-label="Compara els dos TPU"></div></div>
+      </div>
+      <div class="card" style="margin-top:1.5rem"><h3>Rang útil de l'ADC</h3>
+        <p class="mono">10 kΩ: unes 310 unitats</p><div class="bar"><i style="width:44%"></i></div>
+        <p class="mono">47 kΩ: unes 700 unitats</p><div class="bar"><i style="width:100%"></i></div></div>
+    </section>
+
+    <section id="codi" class="tech">
       <span class="mono">Firmware</span>
       <h2>Codi</h2>
       <div class="code fw">
@@ -145,7 +200,7 @@ if (sscanf(rxLine.c_str(), "%d %d %d %d %d %d",
       </div>
     </section>
 
-    <section id="bom">
+    <section id="bom" class="tech">
       <span class="mono">Components</span>
       <h2>Llista de materials</h2>
       <div class="card">
@@ -207,6 +262,8 @@ angle = alpha * (angle + gyroRate * dt)
         <div class="card"><b>10 Hz</b><span>Trames Bluetooth per segon</span></div>
         <div class="card"><b>6</b><span>Servos: 5 dits i 1 canell</span></div>
       </div>
+      <div class="card" style="margin-top:1.5rem"><h3>Què no fa i què segueix</h3>
+        <p>No reprodueix l'abducció dels dits ni la rotació completa de l'avantbraç. Com a millora: PCB d'una sola cara amb vies i una única alimentació per a servos i microcontrolador.</p></div>
     </section>
   </main>
 </div>

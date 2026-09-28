@@ -24,6 +24,8 @@
       <a href="#cad">Disseny CAD</a>
       <a href="#sistema">Arquitectura</a>
       <a href="#pcb">Disseny PCB</a>
+      <a href="#codi">Firmware</a>
+      <a href="#bom">Materials</a>
       <a href="#reptes">Reptes i solucions</a>
       <a href="#resultats">Resultats</a>
     </nav>
@@ -39,10 +41,10 @@
           <h3>Objectiu</h3>
           <p>Un guant emissor mesura la flexió dels dits i l'orientació del canell. Per Bluetooth, un braç articulat receptor mou els servos per copiar la posició de la mà.</p>
           <dl class="specs">
-            <div><dt>Microcontrolador</dt><dd>2 × ESP32</dd></div>
+            <div><dt>Microcontrolador</dt><dd>2 × Wemos D1 R32 (ESP32)</dd></div>
             <div><dt>Sensors</dt><dd>5 × flex, MPU6050</dd></div>
-            <div><dt>Actuació</dt><dd>6 × MG996R via PCA9685</dd></div>
-            <div><dt>Enllaç</dt><dd>Bluetooth</dd></div>
+            <div><dt>Actuació</dt><dd>6 × servo DM996</dd></div>
+            <div><dt>Enllaç</dt><dd>Bluetooth SPP, 10 Hz</dd></div>
           </dl>
         </div>
         <figure class="card fig">
@@ -57,17 +59,28 @@
       <h2>Disseny CAD</h2>
       <div class="card">
         <div class="tabs" role="tablist">
-          <button class="tab active" role="tab" data-step="0">v1.0 Inicial</button>
-          <button class="tab" role="tab" data-step="1">v2.0 Reforç base</button>
-          <button class="tab" role="tab" data-step="2">v3.0 Integració servos</button>
+          <button class="tab active" role="tab" data-step="0">1 Antebraç InMoov</button>
+          <button class="tab" role="tab" data-step="1">2 Mà BrainyHand</button>
+          <button class="tab" role="tab" data-step="2">3 Redisseny a Fusion 360</button>
+          <button class="tab" role="tab" data-step="3">4 Resultat</button>
         </div>
         <div class="grid2 cad" id="cad-panel">
-          <img id="cad-img" src="Brazo3.jpg" alt="Versió CAD v1.0" class="zoom">
+          <img id="cad-img" src="cad-1-inmoov.jpg" alt="Antebraç InMoov" class="zoom">
           <div>
             <h3 id="cad-title"></h3>
             <p id="cad-desc"></p>
           </div>
         </div>
+      </div>
+      <div class="card" style="margin-top:1.5rem">
+        <h3>Fabricació</h3>
+        <dl class="specs">
+          <div><dt>Base</dt><dd>InMoov (antebraç) + BrainyHand (mà)</dd></div>
+          <div><dt>Estructura</dt><dd>PLA</dd></div>
+          <div><dt>Frontisses</dt><dd>TPU, farciment baix</dd></div>
+          <div><dt>Tendons</dt><dd>Fil de niló</dd></div>
+          <div><dt>Impressora</dt><dd>[Model d'impressora]</dd></div>
+        </dl>
       </div>
     </section>
 
@@ -79,8 +92,8 @@
         <button class="node active" data-n="0">Sensors flex</button>
         <button class="node" data-n="1">MPU6050</button>
         <button class="node" data-n="2">ESP32 (guant)</button>
-        <button class="node" data-n="3">Bluetooth</button>
-        <button class="node" data-n="4">ESP32 + PCA9685</button>
+        <button class="node" data-n="3">Bluetooth SPP</button>
+        <button class="node" data-n="4">ESP32 (braç)</button>
         <button class="node" data-n="5">Servos</button>
       </div>
       <div class="card" id="node-info" aria-live="polite"></div>
@@ -91,15 +104,66 @@
       <h2>Disseny PCB</h2>
       <div class="grid2">
         <article class="card">
-          <img src="Brazo3.jpg" alt="PCB del guant" class="zoom">
+          <img src="pcb-guant.jpg" alt="PCB del guant" class="zoom">
           <h3>PCB del guant</h3>
-          <p>Un divisor de tensió per cada sensor flex adapta la resistència variable a l'entrada ADC de l'ESP32. Inclou el bus I2C de la MPU6050.</p>
+          <p>Cinc divisors de tensió amb resistències de 47 kΩ adapten els sensors flex a l'entrada ADC. La MPU6050 va connectada directament a la Wemos.</p>
         </article>
         <article class="card">
-          <img src="Brazo4.jpg" alt="PCB del braç" class="zoom">
+          <img src="pcb-brac.jpg" alt="PCB del braç" class="zoom">
           <h3>PCB del braç</h3>
-          <p>Reparteix la potència als servos (5 V, 5 A) i separa-la de la lògica. Connecta el PCA9685 als sis MG996R.</p>
+          <p>Centralitza les connexions dels sis servos DM996 amb la Wemos i porta un condensador a la línia de 6,5 V. Servos i Wemos tenen alimentacions separades amb GND comú.</p>
         </article>
+      </div>
+    </section>
+
+    <section id="codi">
+      <span class="mono">Firmware</span>
+      <h2>Codi</h2>
+      <div class="code fw">
+        <div class="code-head"><div class="head-tabs"><button class="ctab active" data-t="fw-c">Guant (client)</button><button class="ctab" data-t="fw-s">Braç (servidor)</button></div><button class="btn small" data-copy>Copia el codi</button></div>
+<pre id="fw-c"><code>// Cada 100 ms: mitjana de 8 lectures i validació de rang
+for (int i = 0; i &lt; 8; i++) sum1 += analogRead(FLEX1);
+uint16_t flex1 = sum1 / 8;
+if (flex1 &lt; 1000 || flex1 &gt; 3000) flex1 = lastFlex1;
+
+// Filtre complementari amb unwrapping
+float diff = roll_acc - roll_gyro;
+if (diff &gt; 180.0f) roll_acc -= 360.0f;
+else if (diff &lt; -180.0f) roll_acc += 360.0f;
+roll = 0.98f * roll_gyro + 0.02f * roll_acc;
+
+// Tram: flex1 flex2 flex3 flex4 flex5 roll
+SerialBT.printf("%d %d %d %d %d %d\n", flex1, flex2, flex3, flex4, flex5, rollServo);</code></pre>
+<pre id="fw-s" hidden><code>// Rep la tram i mou cada servo de forma suau
+if (sscanf(rxLine.c_str(), "%d %d %d %d %d %d",
+           &amp;flex1, &amp;flex2, &amp;flex3, &amp;flex4, &amp;flex5, &amp;rollServo) == 6) {
+  int target = map(flex1, minFlex1, maxFlex1, 180, 0);
+  target = constrain(target, 0, 180);
+  ang1 = ang1 + (target - ang1) / 4;   // avança 1/4 de la diferència
+  servo1.write(ang1);
+}</code></pre>
+      </div>
+    </section>
+
+    <section id="bom">
+      <span class="mono">Components</span>
+      <h2>Llista de materials</h2>
+      <div class="card">
+        <input class="search" id="bomSearch" type="search" placeholder="Cerca components, protocols o funcions" aria-label="Cerca a la llista de materials">
+        <div class="tbl"><table>
+          <thead><tr><th>Component</th><th>Funció</th><th>Interfície</th><th>Qtt</th></tr></thead>
+          <tbody>
+            <tr><td>Wemos D1 R32 (ESP32)</td><td>Microcontrolador de guant i braç</td><td>Bluetooth SPP, ADC, PWM</td><td>2</td></tr>
+            <tr><td>MPU6050 (GY-521)</td><td>Rotació del canell</td><td>I2C</td><td>1</td></tr>
+            <tr><td>Flex sensor FS-L-0055-253-ST</td><td>Flexió dels dits</td><td>Analògic (ADC)</td><td>5</td></tr>
+            <tr><td>Resistència 47 kΩ</td><td>Divisor de tensió</td><td>Analògic</td><td>5</td></tr>
+            <tr><td>Servo digital DM996 (15 kg·cm)</td><td>Dits i canell</td><td>PWM</td><td>6</td></tr>
+            <tr><td>Font Promax FAC-363B</td><td>Alimentació dels servos (6,5 V)</td><td>Font de laboratori</td><td>1</td></tr>
+            <tr><td>Bateria Li-ion 18650</td><td>Alimentació de la Wemos del braç</td><td>Sèrie (≈ 6,4 V)</td><td>2</td></tr>
+            <tr><td>Bateria Li-ion 5500 mAh</td><td>Alimentació de la Wemos del guant</td><td>Connector DC</td><td>1</td></tr>
+            <tr><td>PCB del guant i del braç</td><td>Connexions i divisors de tensió</td><td>Fabricades amb KiCad</td><td>2</td></tr>
+          </tbody>
+        </table></div>
       </div>
     </section>
 
@@ -115,16 +179,16 @@
         <article class="card">
           <h3>Alimentació dels servos</h3>
           <p>La placa es reiniciava quan tots els servos es movien alhora.</p>
-          <p class="sol"><strong>Solució:</strong> alimentació de potència (5 V, 5 A) separada de la lògica.</p>
+          <p class="sol"><strong>Solució:</strong> font externa de 6,5 V per als servos (pic d'1,6 A), Wemos amb alimentació pròpia i GND comú.</p>
         </article>
         <article class="card">
           <h3>Rigidesa del TPU</h3>
-          <p>El material flexible cedia i restava precisió a l'articulació.</p>
-          <p class="sol"><strong>Solució:</strong> ajust de parets i acoblaments de les peces.</p>
+          <p>Les frontisses de TPU eren massa rígides i el servo no podia tancar els dits.</p>
+          <p class="sol"><strong>Solució:</strong> TPU amb farciment baix, que permet tancar el dit i recuperar la posició.</p>
         </article>
       </div>
       <div class="code">
-        <div class="code-head"><span class="mono">complementari.ino</span><button class="btn small" id="copy">Copia el codi</button></div>
+        <div class="code-head"><span class="mono">complementari.ino</span><button class="btn small" data-copy>Copia el codi</button></div>
 <pre><code>// alpha: pes del giroscopi (p. ex. 0.98)
 angle = alpha * (angle + gyroRate * dt)
       + (1 - alpha) * accelAngle;</code></pre>
@@ -134,10 +198,14 @@ angle = alpha * (angle + gyroRate * dt)
     <section id="resultats">
       <span class="mono">Resultats</span>
       <h2>Rendiment</h2>
+      <div class="card vid">
+        <video controls preload="metadata" poster="video-poster.jpg"><source src="demo.mp4" type="video/mp4"></video>
+        <p class="mono">Demostració: el braç reprodueix els gestos del guant.</p>
+      </div>
       <div class="grid3 stats">
         <div class="card"><b>&lt; 40 ms</b><span>Latència extrem a extrem</span></div>
-        <div class="card"><b>50 Hz</b><span>Freqüència d'actualització</span></div>
-        <div class="card"><b>6</b><span>Servos controlats en temps real</span></div>
+        <div class="card"><b>10 Hz</b><span>Trames Bluetooth per segon</span></div>
+        <div class="card"><b>6</b><span>Servos: 5 dits i 1 canell</span></div>
       </div>
     </section>
   </main>

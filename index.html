@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guant sensoritzat i braç robòtic | ML Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="progress"></div>
+<header class="nav">
+  <a href="index.html" class="logo">ML Portfolio</a>
+  <a href="index.html" class="btn">&larr; Tornar als projectes</a>
+</header>
+
+<div class="layout">
+  <aside class="side">
+    <nav class="side-in" aria-label="Índex del projecte">
+      <span class="mono">Índex</span>
+      <a href="#intro" class="active">Introducció</a>
+      <a href="#cad">Disseny CAD</a>
+      <a href="#sistema">Arquitectura</a>
+      <a href="#pcb">Disseny PCB</a>
+      <a href="#reptes">Reptes i solucions</a>
+      <a href="#resultats">Resultats</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <section id="intro">
+      <span class="mono">TFG · Embedded &amp; Hardware</span>
+      <h1>Braç robòtic controlat amb un guant sensoritzat</h1>
+      <p class="lead">Sistema embegut que reprodueix en temps real els moviments de la mà i el canell d'una persona, amb sensors de flexió, una IMU, dos ESP32 i servomotors.</p>
+      <div class="grid2">
+        <div class="card">
+          <h3>Objectiu</h3>
+          <p>Un guant emissor mesura la flexió dels dits i l'orientació del canell. Per Bluetooth, un braç articulat receptor mou els servos per copiar la posició de la mà.</p>
+          <dl class="specs">
+            <div><dt>Microcontrolador</dt><dd>2 × ESP32</dd></div>
+            <div><dt>Sensors</dt><dd>5 × flex, MPU6050</dd></div>
+            <div><dt>Actuació</dt><dd>6 × MG996R via PCA9685</dd></div>
+            <div><dt>Enllaç</dt><dd>Bluetooth</dd></div>
+          </dl>
+        </div>
+        <figure class="card fig">
+          <img src="Brazo1.jpg" alt="Prototip final del braç articulat" class="zoom">
+          <figcaption class="mono">Prototip final. Clica per ampliar.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="cad">
+      <span class="mono">Mecànica</span>
+      <h2>Disseny CAD</h2>
+      <div class="card">
+        <div class="tabs" role="tablist">
+          <button class="tab active" role="tab" data-step="0">v1.0 Inicial</button>
+          <button class="tab" role="tab" data-step="1">v2.0 Reforç base</button>
+          <button class="tab" role="tab" data-step="2">v3.0 Integració servos</button>
+        </div>
+        <div class="grid2 cad" id="cad-panel">
+          <img id="cad-img" src="Brazo3.jpg" alt="Versió CAD v1.0" class="zoom">
+          <div>
+            <h3 id="cad-title"></h3>
+            <p id="cad-desc"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="sistema">
+      <span class="mono">Sistema</span>
+      <h2>Arquitectura</h2>
+      <p class="lead">Selecciona un bloc per veure què fa.</p>
+      <div class="flow" role="tablist">
+        <button class="node active" data-n="0">Sensors flex</button>
+        <button class="node" data-n="1">MPU6050</button>
+        <button class="node" data-n="2">ESP32 (guant)</button>
+        <button class="node" data-n="3">Bluetooth</button>
+        <button class="node" data-n="4">ESP32 + PCA9685</button>
+        <button class="node" data-n="5">Servos</button>
+      </div>
+      <div class="card" id="node-info" aria-live="polite"></div>
+    </section>
+
+    <section id="pcb">
+      <span class="mono">Electrònica</span>
+      <h2>Disseny PCB</h2>
+      <div class="grid2">
+        <article class="card">
+          <img src="Brazo3.jpg" alt="PCB del guant" class="zoom">
+          <h3>PCB del guant</h3>
+          <p>Un divisor de tensió per cada sensor flex adapta la resistència variable a l'entrada ADC de l'ESP32. Inclou el bus I2C de la MPU6050.</p>
+        </article>
+        <article class="card">
+          <img src="Brazo4.jpg" alt="PCB del braç" class="zoom">
+          <h3>PCB del braç</h3>
+          <p>Reparteix la potència als servos (5 V, 5 A) i separa-la de la lògica. Connecta el PCA9685 als sis MG996R.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="reptes">
+      <span class="mono">Enginyeria</span>
+      <h2>Reptes i solucions</h2>
+      <div class="grid3">
+        <article class="card">
+          <h3>Deriva i salts de la MPU6050</h3>
+          <p>El giroscopi deriva i l'angle salta en creuar ±180°.</p>
+          <p class="sol"><strong>Solució:</strong> filtre complementari i unwrapping de l'angle.</p>
+        </article>
+        <article class="card">
+          <h3>Alimentació dels servos</h3>
+          <p>La placa es reiniciava quan tots els servos es movien alhora.</p>
+          <p class="sol"><strong>Solució:</strong> alimentació de potència (5 V, 5 A) separada de la lògica.</p>
+        </article>
+        <article class="card">
+          <h3>Rigidesa del TPU</h3>
+          <p>El material flexible cedia i restava precisió a l'articulació.</p>
+          <p class="sol"><strong>Solució:</strong> ajust de parets i acoblaments de les peces.</p>
+        </article>
+      </div>
+      <div class="code">
+        <div class="code-head"><span class="mono">complementari.ino</span><button class="btn small" id="copy">Copia el codi</button></div>
+<pre><code>// alpha: pes del giroscopi (p. ex. 0.98)
+angle = alpha * (angle + gyroRate * dt)
+      + (1 - alpha) * accelAngle;</code></pre>
+      </div>
+    </section>
+
+    <section id="resultats">
+      <span class="mono">Resultats</span>
+      <h2>Rendiment</h2>
+      <div class="grid3 stats">
+        <div class="card"><b>&lt; 40 ms</b><span>Latència extrem a extrem</span></div>
+        <div class="card"><b>50 Hz</b><span>Freqüència d'actualització</span></div>
+        <div class="card"><b>6</b><span>Servos controlats en temps real</span></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="lightbox" hidden>
+  <button id="lb-close" aria-label="Tanca">&times;</button>
+  <img id="lb-img" alt="">
+  <span class="mono">Roda: zoom · Arrossega: mou · Esc: tanca</span>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

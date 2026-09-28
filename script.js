@@ -23,9 +23,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* Mòdul CAD amb transició suau */
   const cad = [
-    { img: 'Brazo3.jpg', t: 'Modelat CAD v1.0', d: "Primera versió estructural, impresa en PLA. Es van detectar punts de fatiga a l'eix principal de rotació." },
-    { img: 'Brazo2.jpg', t: 'Reforç de la base v2.0', d: 'Base articulada redissenyada: parets més gruixudes i coixinets de bola per reduir la fricció.' },
-    { img: 'Brazo4.jpg', t: 'Integració de servos v3.0', d: 'Acoblaments mecànics ajustats als servomotors i guiat de cables intern optimitzat.' }
+    { img: 'cad-1-inmoov.jpg', t: 'Antebraç InMoov', d: "Base escollida per la seva estructura sòlida, els allotjaments per als servos i la rotació del canell. La mà original és difícil de muntar i es desajusta amb l'ús." },
+    { img: 'cad-2-brainyhand.jpg', t: 'Mà BrainyHand', d: "Alternativa amb menys peces i frontisses flexibles. No té rotació de canell i no encaixa directament amb l'antebraç d'InMoov." },
+    { img: 'cad-3-fusion.jpg', t: 'Redisseny a Fusion 360', d: "Nova peça base per a la mà, amb les distàncies i forats del canell d'InMoov. Uneix els dos dissenys i conserva la rotació." },
+    { img: 'cad-4-final.jpg', t: 'Braç ensamblat', d: 'Impressió 3D i muntatge del conjunt, amb els servos a la part posterior i els dits accionats amb fil de niló.' }
   ];
   const panel = $('#cad-panel'), cimg = $('#cad-img'), ct = $('#cad-title'), cd = $('#cad-desc');
   const tabs = $$('.tab');
@@ -45,12 +46,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* Diagrama d'arquitectura interactiu */
   const nodes = [
-    ['Sensors flex', 'Cinc sensors Spectra Symbol mesuren la curvatura de cada dit. El divisor de tensió els converteix en un senyal llegible per l\'ADC.'],
-    ['MPU6050', 'La IMU mesura acceleració i velocitat angular del canell per I2C. La fusió de sensors en calcula pitch i roll.'],
-    ['ESP32 (guant)', 'Llegeix flex i IMU, filtra el senyal amb una mitjana mòbil i empaqueta les dades a 50 Hz.'],
-    ['Bluetooth', 'Envia una trama compacta amb cinc valors de flexió, pitch, roll i marca de temps entre els dos ESP32.'],
-    ['ESP32 + PCA9685', 'El receptor decodifica la trama i genera els PWM dels sis canals amb el controlador PCA9685.'],
-    ['Servos', 'Sis MG996R alimentats a part (5 V, 5 A) mouen les articulacions i reprodueixen la posició de la mà.']
+    ['Sensors flex', 'Cinc Spectra Symbol llegits amb divisors de tensió de 47 kΩ. Cada lectura és la mitjana de 8 mostres.'],
+    ['MPU6050', 'Mesura el gir del canell per I2C. Giroscopi i acceleròmetre es fusionen amb un filtre complementari (α = 0,98) i unwrapping.'],
+    ['ESP32 (guant)', 'Wemos D1 R32 que valida el rang (1000–3000) i envia una trama de text cada 100 ms com a client Bluetooth.'],
+    ['Bluetooth SPP', 'Enllaç sèrie clàssic entre les dues ESP32, a 10 Hz. La trama porta cinc valors flex i l\'angle del canell.'],
+    ['ESP32 (braç)', 'Servidor Bluetooth. Interpreta la trama, converteix cada lectura en angle amb map() i suavitza el moviment.'],
+    ['Servos', 'Sis DM996: cinc tiren dels dits amb fil de niló i un gira el canell amb engranatges. Alimentats a 6,5 V.']
   ];
   const info = $('#node-info'), nbtn = $$('.node');
   function showNode(n) {
@@ -63,14 +64,25 @@ document.addEventListener('DOMContentLoaded', () => {
   nbtn.forEach((b, n) => b.addEventListener('click', () => showNode(n)));
   showNode(0);
 
-  /* Copiar bloc de codi */
-  const copy = $('#copy');
-  copy.addEventListener('click', async () => {
+  /* Copiar codi */
+  $$('[data-copy]').forEach(b => b.addEventListener('click', async () => {
     try {
-      await navigator.clipboard.writeText($('.code code').innerText);
-      copy.textContent = 'Copiat';
-    } catch { copy.textContent = 'No s\'ha pogut copiar'; }
-    setTimeout(() => copy.textContent = 'Copia el codi', 1800);
+      await navigator.clipboard.writeText(b.closest('.code').querySelector('pre:not([hidden]) code').innerText);
+      b.textContent = 'Copiat';
+    } catch { b.textContent = "No s'ha pogut copiar"; }
+    setTimeout(() => b.textContent = 'Copia el codi', 1800);
+  }));
+
+  /* Pestanyes de codi */
+  $$('.ctab').forEach(b => b.addEventListener('click', () => {
+    $$('.ctab').forEach(x => x.classList.toggle('active', x === b));
+    $$('.fw pre').forEach(p => p.hidden = p.id !== b.dataset.t);
+  }));
+
+  /* Filtre de la llista de materials */
+  $('#bomSearch').addEventListener('input', e => {
+    const q = e.target.value.toLowerCase();
+    $$('#bom tbody tr').forEach(r => r.hidden = !r.innerText.toLowerCase().includes(q));
   });
 
   /* Visor amb zoom i arrossegament */

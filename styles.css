@@ -70,3 +70,14 @@ pre{padding:1.2rem;overflow-x:auto;font:.85rem/1.6 var(--mono)}
 .nav{padding:0 1rem}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:.7rem .6rem;border-bottom:1px solid var(--line);text-align:left}
+th{font:600 .72rem var(--mono);color:var(--mute)}
+.tbl{overflow-x:auto}
+.search{width:100%;padding:.7rem;margin-bottom:1rem;border:1px solid var(--line);border-radius:4px;background:var(--bg);font:inherit}
+.head-tabs{display:flex;gap:.4rem}
+.ctab{font:600 .72rem var(--mono);padding:.3rem .7rem;border:1px solid var(--line);background:var(--card);border-radius:4px;cursor:pointer;color:var(--ink)}
+.ctab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+video{width:100%;border-radius:6px;border:1px solid var(--line);background:#000}
+.vid{margin-bottom:1.5rem}.vid p{margin-top:.6rem}

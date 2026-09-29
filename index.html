@@ -6,7 +6,7 @@
 <title>Braç robòtic controlat amb guant sensoritzat | ML Portfolio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600..900;1,9..144,600..900&family=Hanken+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
 <script src="script.js" defer></script>
@@ -30,6 +30,7 @@
     <a href="#imu"><i>06</i>IMU MPU6050</a>
     <a href="#pcb"><i>07</i>PCBs</a>
     <a href="#bluetooth"><i>08</i>Comunicació Bluetooth</a>
+    <a href="#material"><i>09</i>Materials</a>
   </nav>
 </aside>
 
@@ -37,8 +38,14 @@
 
 <section id="objectius">
   <span class="mono">TFG · Enginyeria Biomèdica</span>
-  <h1>Braç robòtic controlat amb un guant sensoritzat</h1>
+  <h1>Braç robòtic controlat amb un <em>guant</em> sensoritzat</h1>
   <p class="lead">Objectiu general: reproduir en un braç robòtic els moviments de la meva mà.</p>
+  <div class="ticker" aria-hidden="true"><div id="tick"></div></div>
+  <p class="mono tk-note">Simulació del flux de dades: cinc lectures flex i l'angle del canell.</p>
+  <div class="stats">
+    <div><b>5</b><span>sensors de flexió</span></div><div><b>2</b><span>microcontroladors ESP32</span></div>
+    <div><b>10 Hz</b><span>trames per Bluetooth</span></div><div><b>6</b><span>servos al braç</span></div>
+  </div>
   <div class="grid2">
     <div class="card"><h3>Flexió i extensió dels dits</h3><p>Cada dit del braç ha de tancar-se i obrir-se igual que el meu.</p></div>
     <div class="card"><h3>Rotació del canell</h3><p>El canell del braç ha de girar seguint el gir del meu.</p></div>
@@ -137,6 +144,15 @@
       <p class="mono">Lectura ADC: <b id="adc-v"></b> &rarr; angle del servo: <b id="adc-a"></b>°</p>
     </div>
   </div>
+  <h3>Les dades, en gràfics</h3>
+  <div class="grid2">
+    <div class="card">
+      <div class="tabs" id="ctabs"><button class="tab active" data-k="r">Resistència</button><button class="tab" data-k="v">Tensió</button></div>
+      <canvas id="c-multi"></canvas><p class="mono">Dades de la Taula 4 de la memòria.</p>
+    </div>
+    <div class="card"><h4>Rang útil de l'ADC segons la resistència fixa</h4><canvas id="c-rf"></canvas><p class="mono">Amb 47 kΩ el senyal varia més del doble que amb 10 kΩ.</p></div>
+  </div>
+  <div class="card" style="margin-top:1.5rem"><h4>Calibratge dels cinc sensors</h4><canvas id="c-cal"></canvas><p class="mono">Cada dit té el seu rang, de la màxima flexió (minFlex) al dit estès (maxFlex).</p></div>
 </section>
 
 <section id="imu">
@@ -159,6 +175,13 @@
   <p>El giroscopi domina el moviment ràpid i l'acceleròmetre corregeix poc a poc l'error acumulat. Abans de combinar-los, l'angle de l'acceleròmetre s'alinea amb el del giroscopi per evitar el salt en creuar ±180°.</p>
   <p class="eq">roll_acc = atan2(ay, az) &nbsp;&nbsp; roll = 0,98 · roll_gyro + 0,02 · roll_acc</p>
   <figure class="card fig wide"><img class="zoom" src="img/filtro.jpg" alt="Sortida del filtre complementari"><figcaption class="mono">Amb el filtre, l'angle es manté estable amb el sensor quiet.</figcaption></figure>
+  <h3>Prova el filtre</h3>
+  <div class="card">
+    <p>Simulació amb un moviment lent, un giroscopi amb un petit error i un acceleròmetre sorollós. Mou α i mira com canvia l'angle filtrat.</p>
+    <label class="mono">α = <b id="al-v"></b><input type="range" id="al" min="0" max="1" step="0.01" value="0.98"></label>
+    <canvas id="c-sim"></canvas>
+    <p class="mono">Simulació il·lustrativa: no són dades mesurades.</p>
+  </div>
 </section>
 
 <section id="pcb">
@@ -204,6 +227,22 @@
     <div class="card"><h4>angle roll</h4><p>Angle del canell calculat amb la IMU i el filtre complementari, ja limitat i escalat al rang del servo (0–180°).</p></div>
   </div>
   <p>Al braç, cada lectura flex es converteix en angle amb <code>map()</code>, com s'ha vist abans.</p>
+</section>
+
+<section id="material">
+  <span class="mono">Materials</span>
+  <h2>Components i cost</h2>
+  <div class="total"><span class="mono">Cost estimat del projecte</span><b id="grand"></b></div>
+  <div class="mat-bar">
+    <input id="q" type="search" placeholder="Cerca un component pel nom  ( / )" aria-label="Cerca un component">
+    <div class="chips" id="chips"></div>
+  </div>
+  <div class="tbl"><table id="mt">
+    <thead><tr><th>Component</th><th>Categoria</th><th>Qtt</th><th>Preu unitari (€)</th><th>Subtotal</th></tr></thead>
+    <tbody></tbody>
+    <tfoot><tr><td colspan="4">Total dels resultats</td><td id="tot"></td></tr></tfoot>
+  </table></div>
+  <p class="mono">Preus orientatius: edita'ls i es desen al teu navegador.</p>
 </section>
 
 </main>

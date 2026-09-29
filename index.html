@@ -6,10 +6,10 @@
 <title>Braç robòtic controlat amb guant sensoritzat | ML Portfolio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600..900;1,9..144,600..900&family=Hanken+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Instrument+Sans:wght@400;500;700&family=Martian+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="interactivo.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
-<script src="script.js" defer></script>
+<script src="interactivo.js" defer></script>
 </head>
 <body>
 <div id="progress"></div>
@@ -247,6 +247,15 @@
 
 </main>
 </div>
+
+<aside id="hud" aria-label="Guant i braç en directe">
+  <div class="hud-h"><span class="mono">GUANT</span><i class="pkt" id="pkt"></i><span class="mono">BRAÇ</span></div>
+  <div class="hud-hands"><svg id="h-g" viewBox="0 0 120 165" aria-label="Guant"></svg><svg id="h-a" viewBox="0 0 120 165" aria-label="Braç"></svg></div>
+  <code id="hud-t"></code>
+  <span class="mono" id="hud-r"></span>
+  <button class="btn" id="demo">▶ Mou el guant</button>
+  <p class="mono hint">Fes scroll: gires el canell. Arrossega els dits del guant.</p>
+</aside>
 
 <div id="lb" hidden>
   <button id="lb-x" aria-label="Tanca">&times;</button>
